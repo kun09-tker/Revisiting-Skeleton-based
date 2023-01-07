@@ -289,6 +289,7 @@ def main(input_video, dir_output):
     # results = inference_recognizer(model, fake_anno)
 
     # action_label = label_map[results[0][0]]
+    print(blacks)
 
     pose_model = init_pose_model(args.pose_config, args.pose_checkpoint,
                                  args.device)
