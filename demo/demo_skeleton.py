@@ -122,6 +122,7 @@ def frame_extraction(video_path, short_side):
     vid = cv2.VideoCapture(video_path)
     frames = []
     frame_paths = []
+    blacks = []
     flag, frame = vid.read()
     cnt = 0
     new_h, new_w = None, None
@@ -138,6 +139,7 @@ def frame_extraction(video_path, short_side):
 
         cv2.imwrite(frame_path, frame)
         cnt += 1
+        blacks.append(np.zeros([new_w, new_h, 3], dtype=np.uint8))
         flag, frame = vid.read()
 
     return frame_paths, frames
@@ -297,6 +299,8 @@ def main(input_video, dir_output):
     # for frame in vis_frames:
     #     cv2.putText(frame, action_label, (10, 30), FONTFACE, FONTSCALE,
     #                 FONTCOLOR, THICKNESS, LINETYPE)
+    for frame in vis_frames:
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     vid = mpy.ImageSequenceClip([x[:, :, ::-1] for x in vis_frames], fps=24)
     vid.write_videofile(args.out_filename, remove_temp=True)
