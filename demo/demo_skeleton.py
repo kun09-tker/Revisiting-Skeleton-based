@@ -27,7 +27,7 @@ except (ImportError, ModuleNotFoundError):
 
 try:
     from mmpose.apis import inference_top_down_pose_model, init_pose_model, vis_pose_result
-except (ImportError, ModuleNotFoundError):
+except (ImportError , ModuleNotFoundError) as e:
     def init_pose_model(*args, **kwargs):
         pass
 
@@ -41,6 +41,8 @@ except (ImportError, ModuleNotFoundError):
         'Failed to import `init_pose_model`, `inference_top_down_pose_model`, `vis_pose_result` from '
         '`mmpose.apis`. Make sure you can successfully import these if you want to use related features. '
     )
+
+    print(e)
 
 
 try:
