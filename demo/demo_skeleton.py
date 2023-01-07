@@ -170,15 +170,12 @@ def detection_inference(args, frame_paths):
 def pose_inference(args, frame_paths, det_results):
     model = init_pose_model(args.pose_config, args.pose_checkpoint,
                             args.device)
-    print(model)
     ret = []
     print('Performing Human Pose Estimation for each frame')
     prog_bar = mmcv.ProgressBar(len(frame_paths))
     for f, d in zip(frame_paths, det_results):
         # Align input format
-        print("frame_paths", f)
         d = [dict(bbox=x) for x in list(d)]
-        print("det_results", d)
         pose = inference_top_down_pose_model(model, f, d, format='xyxy')[0]
         ret.append(pose)
         prog_bar.update()
