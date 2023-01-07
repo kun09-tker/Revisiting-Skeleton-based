@@ -297,7 +297,7 @@ def main(input_video, dir_output, target_size):
     pose_model = init_pose_model(args.pose_config, args.pose_checkpoint,
                                  args.device)
     
-    w, h, _ = cv2.imread(frame_paths[i]).shape
+    w, h, _ = cv2.imread(frame_paths[0]).shape
     print(pose_results)
     for frame_pose in pose_results:
         for pose in frame_pose:
