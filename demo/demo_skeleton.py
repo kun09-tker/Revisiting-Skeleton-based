@@ -298,7 +298,7 @@ def main(input_video, dir_output, target_size):
                                  args.device)
     
 
-    for i in range(pose_results):
+    for i in range(len(pose_results)):
         w, h, _ = cv2.imread(frame_paths[i]).shape
         for pose in pose_results[i]:
             pose["bbox"] = np.array([0.,0.,0.,0.,0.])
