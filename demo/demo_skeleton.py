@@ -292,11 +292,11 @@ def main(input_video, dir_output):
                                  args.device)
     
     print(pose_results)
-
-    vis_frames = [
-        vis_pose_result(pose_model, np.zeros([w, h, 3], dtype=np.uint8), pose_results[i])
-        for i in range(num_frame)
-    ]
+    vis_frames = []
+    for i in range(num_frame):
+        w, h = frame_paths[i].shape
+        vis_pose = vis_pose_result(pose_model, np.zeros([w, h, 3], dtype=np.uint8), pose_results[i])
+        vis_frames.append(vis_pose)
     # for frame in vis_frames:
     #     cv2.putText(frame, action_label, (10, 30), FONTFACE, FONTSCALE,
     #                 FONTCOLOR, THICKNESS, LINETYPE)
