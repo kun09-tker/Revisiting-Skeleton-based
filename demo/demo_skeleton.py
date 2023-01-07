@@ -173,6 +173,8 @@ def pose_inference(args, frame_paths, det_results):
     prog_bar = mmcv.ProgressBar(len(frame_paths))
     for f, d in zip(frame_paths, det_results):
         # Align input format
+        print("frame_paths", f)
+        print("det_results", d)
         d = [dict(bbox=x) for x in list(d)]
         pose = inference_top_down_pose_model(model, f, d, format='xyxy')[0]
         ret.append(pose)
@@ -225,19 +227,19 @@ def pose_tracking(pose_results, max_tracks=2, thre=30):
 def main(input_video, dir_output):
     args = parse_args(input_video, dir_output)
 
-    frame_paths, original_frames = frame_extraction(args.video,
+    frame_paths, _ = frame_extraction(args.video,
                                                     args.short_side)
     num_frame = len(frame_paths)
-    h, w, _ = original_frames[0].shape
+    # h, w, _ = original_frames[0].shape
 
     config = mmcv.Config.fromfile(args.config)
     config.data.test.pipeline = [x for x in config.data.test.pipeline if x['type'] != 'DecompressPose']
     # Are we using GCN for Infernece?
-    GCN_flag = 'GCN' in config.model.type
-    GCN_nperson = None
-    if GCN_flag:
-        format_op = [op for op in config.data.test.pipeline if op['type'] == 'FormatGCNInput'][0]
-        GCN_nperson = format_op['num_person']
+    # GCN_flag = 'GCN' in config.model.type
+    # GCN_nperson = None
+    # if GCN_flag:
+    #     format_op = [op for op in config.data.test.pipeline if op['type'] == 'FormatGCNInput'][0]
+        # GCN_nperson = format_op['num_person']
 
     # model = init_recognizer(config, args.checkpoint, args.device)
 
