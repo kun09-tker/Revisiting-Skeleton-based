@@ -142,7 +142,7 @@ def frame_extraction(video_path, short_side):
         blacks.append(np.zeros([new_w, new_h, 3], dtype=np.uint8))
         flag, frame = vid.read()
 
-    return frame_paths, frames
+    return frame_paths, frames, blacks
 
 
 def detection_inference(args, frame_paths):
@@ -229,7 +229,7 @@ def pose_tracking(pose_results, max_tracks=2, thre=30):
 def main(input_video, dir_output):
     args = parse_args(input_video, dir_output)
 
-    frame_paths, _ = frame_extraction(args.video,
+    frame_paths, _, blacks = frame_extraction(args.video,
                                                     args.short_side)
     num_frame = len(frame_paths)
     # h, w, _ = original_frames[0].shape
@@ -293,7 +293,7 @@ def main(input_video, dir_output):
     pose_model = init_pose_model(args.pose_config, args.pose_checkpoint,
                                  args.device)
     vis_frames = [
-        vis_pose_result(pose_model, frame_paths[i], pose_results[i])
+        vis_pose_result(pose_model, blacks[i], pose_results[i])
         for i in range(num_frame)
     ]
     # for frame in vis_frames:
