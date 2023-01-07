@@ -174,8 +174,8 @@ def pose_inference(args, frame_paths, det_results):
     for f, d in zip(frame_paths, det_results):
         # Align input format
         print("frame_paths", f)
-        print("det_results", d)
         d = [dict(bbox=x) for x in list(d)]
+        print("det_results", d)
         pose = inference_top_down_pose_model(model, f, d, format='xyxy')[0]
         ret.append(pose)
         prog_bar.update()
