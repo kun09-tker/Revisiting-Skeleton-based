@@ -251,36 +251,36 @@ def main(input_video, dir_output):
     pose_results = pose_inference(args, frame_paths, det_results)
     torch.cuda.empty_cache()
 
-    fake_anno = dict(
-        frame_dir='',
-        label=-1,
-        img_shape=(h, w),
-        original_shape=(h, w),
-        start_index=0,
-        modality='Pose',
-        total_frames=num_frame)
+    # fake_anno = dict(
+    #     frame_dir='',
+    #     label=-1,
+    #     img_shape=(h, w),
+    #     original_shape=(h, w),
+    #     start_index=0,
+    #     modality='Pose',
+    #     total_frames=num_frame)
 
-    if GCN_flag:
-        # We will keep at most `GCN_nperson` persons per frame.
-        tracking_inputs = [[pose['keypoints'] for pose in poses] for poses in pose_results]
-        keypoint, keypoint_score = pose_tracking(tracking_inputs, max_tracks=GCN_nperson)
-        fake_anno['keypoint'] = keypoint
-        fake_anno['keypoint_score'] = keypoint_score
-    else:
-        num_person = max([len(x) for x in pose_results])
-        # Current PoseC3D models are trained on COCO-keypoints (17 keypoints)
-        num_keypoint = 17
-        keypoint = np.zeros((num_person, num_frame, num_keypoint, 2),
-                            dtype=np.float16)
-        keypoint_score = np.zeros((num_person, num_frame, num_keypoint),
-                                  dtype=np.float16)
-        for i, poses in enumerate(pose_results):
-            for j, pose in enumerate(poses):
-                pose = pose['keypoints']
-                keypoint[j, i] = pose[:, :2]
-                keypoint_score[j, i] = pose[:, 2]
-        fake_anno['keypoint'] = keypoint
-        fake_anno['keypoint_score'] = keypoint_score
+    # if GCN_flag:
+    #     # We will keep at most `GCN_nperson` persons per frame.
+    #     tracking_inputs = [[pose['keypoints'] for pose in poses] for poses in pose_results]
+    #     keypoint, keypoint_score = pose_tracking(tracking_inputs, max_tracks=GCN_nperson)
+    #     # fake_anno['keypoint'] = keypoint
+    #     # fake_anno['keypoint_score'] = keypoint_score
+    # else:
+    #     num_person = max([len(x) for x in pose_results])
+    #     # Current PoseC3D models are trained on COCO-keypoints (17 keypoints)
+    #     num_keypoint = 17
+    #     keypoint = np.zeros((num_person, num_frame, num_keypoint, 2),
+    #                         dtype=np.float16)
+    #     keypoint_score = np.zeros((num_person, num_frame, num_keypoint),
+    #                               dtype=np.float16)
+    #     for i, poses in enumerate(pose_results):
+    #         for j, pose in enumerate(poses):
+    #             pose = pose['keypoints']
+    #             keypoint[j, i] = pose[:, :2]
+    #             keypoint_score[j, i] = pose[:, 2]
+        # fake_anno['keypoint'] = keypoint
+        # fake_anno['keypoint_score'] = keypoint_score
 
     # results = inference_recognizer(model, fake_anno)
 
