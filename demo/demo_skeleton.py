@@ -292,9 +292,13 @@ def main(input_video, dir_output):
                                  args.device)
     
     print(pose_results)
+    for frame_pose in pose_results:
+        for pose in frame_pose:
+            pose["bbox"] = np.array([0.,0.,0.,0.,0.])
+            
     vis_frames = []
     for i in range(num_frame):
-        w, h = cv2.imread(frame_paths[i]).shape
+        w, h, _ = cv2.imread(frame_paths[i]).shape
         vis_pose = vis_pose_result(pose_model, np.zeros([w, h, 3], dtype=np.uint8), pose_results[i])
         vis_frames.append(vis_pose)
     # for frame in vis_frames:
