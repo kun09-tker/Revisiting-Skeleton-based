@@ -122,7 +122,6 @@ def frame_extraction(video_path, short_side):
     vid = cv2.VideoCapture(video_path)
     frames = []
     frame_paths = []
-    blacks = []
     flag, frame = vid.read()
     cnt = 0
     new_h, new_w = None, None
@@ -139,10 +138,9 @@ def frame_extraction(video_path, short_side):
 
         cv2.imwrite(frame_path, frame)
         cnt += 1
-        blacks.append(np.zeros([new_w, new_h, 3], dtype=np.uint8))
         flag, frame = vid.read()
 
-    return frame_paths, frames, blacks
+    return frame_paths, frames
 
 
 def detection_inference(args, frame_paths):
@@ -229,10 +227,10 @@ def pose_tracking(pose_results, max_tracks=2, thre=30):
 def main(input_video, dir_output):
     args = parse_args(input_video, dir_output)
 
-    frame_paths, _, blacks = frame_extraction(args.video,
+    frame_paths, original_frames,= frame_extraction(args.video,
                                                     args.short_side)
     num_frame = len(frame_paths)
-    # h, w, _ = original_frames[0].shape
+    h, w, _ = original_frames[0].shape
 
     config = mmcv.Config.fromfile(args.config)
     config.data.test.pipeline = [x for x in config.data.test.pipeline if x['type'] != 'DecompressPose']
@@ -289,12 +287,14 @@ def main(input_video, dir_output):
     # results = inference_recognizer(model, fake_anno)
 
     # action_label = label_map[results[0][0]]
-    print(blacks)
 
     pose_model = init_pose_model(args.pose_config, args.pose_checkpoint,
                                  args.device)
+    
+    print(pose_results)
+
     vis_frames = [
-        vis_pose_result(pose_model, blacks[i], pose_results[i])
+        vis_pose_result(pose_model, np.zeros([w, h, 3], dtype=np.uint8), pose_results[i])
         for i in range(num_frame)
     ]
     # for frame in vis_frames:
