@@ -57,7 +57,7 @@ THICKNESS = 1
 LINETYPE = 1
 
 
-def parse_args(input_video, dir_output):
+def parse_args(input_video, dir_output, target_size=224):
     parser = argparse.ArgumentParser(description='PoseC3D demo')
     parser.add_argument('video', help='video file/url')
     parser.add_argument('out_filename', help='output filename')
@@ -105,7 +105,13 @@ def parse_args(input_video, dir_output):
         type=int,
         default=480,
         help='specify the short-side length of the image')
-    args = parser.parse_args([input_video, dir_output])
+    parser.add_argument(
+        '--target-size',
+        type=int,
+        default=224,
+        help='size output'
+    )
+    args = parser.parse_args([input_video, dir_output, "--target-size", target_size])
     return args
 
 
@@ -224,13 +230,13 @@ def pose_tracking(pose_results, max_tracks=2, thre=30):
     return result[..., :2], result[..., 2]
 
 
-def main(input_video, dir_output):
-    args = parse_args(input_video, dir_output)
+def main(input_video, dir_output, target_size):
+    args = parse_args(input_video, dir_output, target_size)
 
-    frame_paths, original_frames,= frame_extraction(args.video,
+    frame_paths, _ = frame_extraction(args.video,
                                                     args.short_side)
     num_frame = len(frame_paths)
-    h, w, _ = original_frames[0].shape
+    # h, w, _ = original_frames[0].shape
 
     config = mmcv.Config.fromfile(args.config)
     config.data.test.pipeline = [x for x in config.data.test.pipeline if x['type'] != 'DecompressPose']
@@ -291,15 +297,19 @@ def main(input_video, dir_output):
     pose_model = init_pose_model(args.pose_config, args.pose_checkpoint,
                                  args.device)
     
+    w, h, _ = cv2.imread(frame_paths[i]).shape
     print(pose_results)
     for frame_pose in pose_results:
         for pose in frame_pose:
             pose["bbox"] = np.array([0.,0.,0.,0.,0.])
-            
+            keypoints = pose["keypoints"]
+            keypoints[:,0:1] = keypoints[:,0:1] / w * args.target_size
+            keypoints[:,1:2] = keypoints[:,1:2] / h * args.target_size
+            pose["keypoints"] = keypoints
+
     vis_frames = []
     for i in range(num_frame):
-        w, h, _ = cv2.imread(frame_paths[i]).shape
-        vis_pose = vis_pose_result(pose_model, np.zeros([w, h, 3], dtype=np.uint8), pose_results[i])
+        vis_pose = vis_pose_result(pose_model, np.zeros([args.target_size, args.target_size, 3], dtype=np.uint8), pose_results[i])
         vis_frames.append(vis_pose)
     # for frame in vis_frames:
     #     cv2.putText(frame, action_label, (10, 30), FONTFACE, FONTSCALE,
