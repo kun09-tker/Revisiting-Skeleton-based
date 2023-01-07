@@ -48,14 +48,14 @@ try:
 except ImportError:
     raise ImportError('Please install moviepy to enable output file')
 
-# FONTFACE = cv2.FONT_HERSHEY_DUPLEX
-# FONTSCALE = 0.75
-# FONTCOLOR = (255, 255, 255)  # BGR, white
-# THICKNESS = 1
-# LINETYPE = 1
+FONTFACE = cv2.FONT_HERSHEY_DUPLEX
+FONTSCALE = 0.75
+FONTCOLOR = (255, 255, 255)  # BGR, white
+THICKNESS = 1
+LINETYPE = 1
 
 
-def parse_args(filename, dir_output, device='cuda:0'):
+def parse_args(input_video, dir_output):
     parser = argparse.ArgumentParser(description='PoseC3D demo')
     parser.add_argument('video', help='video file/url')
     parser.add_argument('out_filename', help='output filename')
@@ -63,11 +63,11 @@ def parse_args(filename, dir_output, device='cuda:0'):
         '--config',
         default='configs/posec3d/slowonly_r50_ntu120_xsub/joint.py',
         help='skeleton action recognition config file path')
-    # parser.add_argument(
-    #     '--checkpoint',
-    #     default=('https://download.openmmlab.com/mmaction/pyskl/ckpt/'
-    #              'posec3d/slowonly_r50_ntu120_xsub/joint.pth'),
-    #     help='skeleton action recognition checkpoint file/url')
+    parser.add_argument(
+        '--checkpoint',
+        default=('https://download.openmmlab.com/mmaction/pyskl/ckpt/'
+                 'posec3d/slowonly_r50_ntu120_xsub/joint.pth'),
+        help='skeleton action recognition checkpoint file/url')
     parser.add_argument(
         '--det-config',
         default='demo/faster_rcnn_r50_fpn_2x_coco.py',
@@ -92,10 +92,10 @@ def parse_args(filename, dir_output, device='cuda:0'):
         type=float,
         default=0.9,
         help='the threshold of human detection score')
-    # parser.add_argument(
-    #     '--label-map',
-    #     default='tools/data/label_map/nturgbd_120.txt',
-    #     help='label map file')
+    parser.add_argument(
+        '--label-map',
+        default='tools/data/label_map/nturgbd_120.txt',
+        help='label map file')
     parser.add_argument(
         '--device', type=str, default='cuda:0', help='CPU/CUDA device option')
     parser.add_argument(
@@ -103,13 +103,12 @@ def parse_args(filename, dir_output, device='cuda:0'):
         type=int,
         default=480,
         help='specify the short-side length of the image')
-    args = parser.parse_args([filename, dir_output, "--device", device])
+    args = parser.parse_args([input_video, dir_output])
     return args
 
 
 def frame_extraction(video_path, short_side):
     """Extract frames given video_path.
-
     Args:
         video_path (str): The video_path.
     """
@@ -121,7 +120,6 @@ def frame_extraction(video_path, short_side):
     vid = cv2.VideoCapture(video_path)
     frames = []
     frame_paths = []
-    black_frames = []
     flag, frame = vid.read()
     cnt = 0
     new_h, new_w = None, None
@@ -139,18 +137,15 @@ def frame_extraction(video_path, short_side):
         cv2.imwrite(frame_path, frame)
         cnt += 1
         flag, frame = vid.read()
-        black_frames.append(np.zeros((new_w, new_h, 3), dtype = np.uint8))
 
-    return frame_paths, black_frames, frames
+    return frame_paths, frames
 
 
 def detection_inference(args, frame_paths):
     """Detect human boxes given frame paths.
-
     Args:
         args (argparse.Namespace): The arguments.
         frame_paths (list[str]): The paths of frames to do detection inference.
-
     Returns:
         list[np.ndarray]: The human detection results.
     """
@@ -227,10 +222,10 @@ def pose_tracking(pose_results, max_tracks=2, thre=30):
     return result[..., :2], result[..., 2]
 
 
-def main(filename, dir_output):
-    args = parse_args(filename, dir_output)
+def main(input_video, dir_output):
+    args = parse_args(input_video, dir_output)
 
-    frame_paths, black_frames, original_frames = frame_extraction(args.video,
+    frame_paths, original_frames = frame_extraction(args.video,
                                                     args.short_side)
     num_frame = len(frame_paths)
     h, w, _ = original_frames[0].shape
@@ -294,14 +289,12 @@ def main(filename, dir_output):
     pose_model = init_pose_model(args.pose_config, args.pose_checkpoint,
                                  args.device)
     vis_frames = [
-        vis_pose_result(pose_model, black_frames[i], pose_results[i])
+        vis_pose_result(pose_model, frame_paths[i], pose_results[i])
         for i in range(num_frame)
     ]
     # for frame in vis_frames:
-    #     cv2.putText(frame, "", (10, 30), FONTFACE, FONTSCALE,
+    #     cv2.putText(frame, action_label, (10, 30), FONTFACE, FONTSCALE,
     #                 FONTCOLOR, THICKNESS, LINETYPE)
-    for frame in vis_frames:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     vid = mpy.ImageSequenceClip([x[:, :, ::-1] for x in vis_frames], fps=24)
     vid.write_videofile(args.out_filename, remove_temp=True)
