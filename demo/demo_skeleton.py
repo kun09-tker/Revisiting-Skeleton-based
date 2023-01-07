@@ -101,7 +101,7 @@ def parse_args(filename, dir_output, device='cuda:0'):
     parser.add_argument(
         '--short-side',
         type=int,
-        default=224,
+        default=480,
         help='specify the short-side length of the image')
     args = parser.parse_args([filename, dir_output, "--device", device])
     return args
