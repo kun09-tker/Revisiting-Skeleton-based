@@ -297,9 +297,8 @@ def main(input_video, dir_output, target_size):
     pose_model = init_pose_model(args.pose_config, args.pose_checkpoint,
                                  args.device)
     
-
+    w, h, _ = cv2.imread(frame_paths[0]).shape
     for i in range(len(pose_results)):
-        w, h, _ = cv2.imread(frame_paths[i]).shape
         for pose in pose_results[i]:
             pose["bbox"] = np.array([0.,0.,0.,0.,0.])
             keypoints = pose["keypoints"]
