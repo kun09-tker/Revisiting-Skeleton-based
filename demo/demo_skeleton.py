@@ -303,8 +303,8 @@ def main(input_video, dir_output, target_size):
         for pose in pose_results[i]:
             pose["bbox"] = np.array([0.,0.,0.,0.,0.])
             keypoints = pose["keypoints"]
-            keypoints[:,0:1] = keypoints[:,0:1] / w * args.target_size
-            keypoints[:,1:2] = keypoints[:,1:2] / h * args.target_size
+            keypoints[:,0:1] = keypoints[:,0:1] / h * args.target_size
+            keypoints[:,1:2] = keypoints[:,1:2] / w * args.target_size
             pose["keypoints"] = keypoints
 
     vis_frames = []
